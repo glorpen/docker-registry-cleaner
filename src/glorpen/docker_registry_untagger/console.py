@@ -1,14 +1,12 @@
 '''
-Created on 18 wrz 2018
-
-@author: glorpen
+.. moduleauthor:: Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>
 '''
 from glorpen.docker_registry_untagger.parser import Loader
 import glorpen.di as di
 import importlib
 from glorpen.docker_registry_untagger import api
-import functools
 from collections import OrderedDict
+import logging
 
 def create_selector_config(cls, loader, config_key):
     return cls(loader.data.get(config_key))
@@ -96,28 +94,60 @@ class Factory(object):
         return self._repositories
 
 class Untagger(object):
+    
+    fake_tag = "untagger-for-deletion"
+    
     def __init__(self, factory):
         super(Untagger, self).__init__()
         
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.factory = factory
-        
-    def search(self):
-        #a._c.get("selectors.pattern")
+    
+    def get_supported_cleaner(self, repository):
         for r in self.factory.repositories:
-            print("is supported", r.supports_repo("docker.example/example/asd"))
-            #r = r.select_tags(('r-20', 'r-17', 'r-21', 'r-18', '16', '1.0.0', '1.0.1', 'latest', 'r-19', 'build-22', '0-131', '1.0.1-r1-alpine'))
-            r = r.select_tags(('1.0.0', '1.0.1', '1.0.1-alpine', '1.0.2', '1.1.2', '1.1.3', '1.1.3+alpine.php70', '1.1.3+centos.php71', '1.1.3+alpine.php71', '1.1.4', '0.4.0', '0.5.0'))
-            print("tags for deletion", r)
-        return
+            if r.supports_repo(repository):
+                return r
+    
+    # TODO: removing empty repository when GC in docker-registry
+    def clean(self):
         for r in self.factory.registries:
-            print(r.check())
+            if not r.check():
+                raise Exception('Could not connect to %s' % r)
             for repo in r.get_repositories():
-                print(r.get_tags(repo))
-
+                repo_name = "%s/%s" % (r.name, repo)
+                cleaner = self.get_supported_cleaner(repo_name)
+                
+                
+                if cleaner:
+                    tags = r.get_tags(repo)
+                    if not tags:
+                        self.logger.info("Found empty repo %s", repo_name)
+                        continue
+                    
+                    self.logger.info("Cleaner for %s found", repo_name)
+                    tags_for_deletion = cleaner.select_tags(tags)
+                    
+                    if tags_for_deletion:
+                        fake_ref = r.upload_fake_image(repo, self.fake_tag)
+                        
+                        for t in tags_for_deletion:
+                            if t == self.fake_tag:
+                                continue
+                            # dont delete, just tag fake image with tags for deletion
+                            r.tag(repo, self.fake_tag, t, cache=True)
+                        
+                        # will remove _image_ referenced by tag, not just tag
+                        r.remove_image(repo, fake_ref)
+                else:
+                    self.logger.info("Cleaner for %s not found", repo_name)
+                
 
 if __name__ == "__main__":
+    
+    logging.basicConfig(level=logging.DEBUG)
+    
     a = App("/srv/.local/example.yml")
     a.register_module("glorpen.docker_registry_untagger.selectors.simple")
     a.register_module("glorpen.docker_registry_untagger.selectors.semver")
     a.commit()
-    a.untagger.search()
+    a.untagger.clean()

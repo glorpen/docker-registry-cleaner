@@ -3,6 +3,7 @@ Created on 22 wrz 2018
 
 @author: glorpen
 '''
+import logging
 
 def flatten(items):
     for i in items:
@@ -15,6 +16,7 @@ class BaseSelector(object):
     def __init__(self, runtime_config, config=None):
         super(BaseSelector, self).__init__()
         
+        self.logger = logging.getLogger(self.__class__.__name__)
         self._config = config
         self._setup(**runtime_config)
     
@@ -34,6 +36,7 @@ class BaseSelectorConfig(object):
     def __init__(self, config):
         super(BaseSelectorConfig, self).__init__()
         
+        self.logger = logging.getLogger(self.__class__.__name__)
         self._parse_config(config)
     
     @classmethod

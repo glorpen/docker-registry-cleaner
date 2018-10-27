@@ -1,7 +1,5 @@
 '''
-Created on 22 wrz 2018
-
-@author: glorpen
+.. moduleauthor:: Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>
 '''
 import semver
 from glorpen.docker_registry_untagger.selectors.simple import MaxSelector
@@ -63,11 +61,11 @@ class ConfigExpressionField(fields.Variant):
         
         if isinstance(value, dict):
             return Expression(
-                min = self._parse_expression(value['min']),
-                max = self._parse_expression(value['max'])
+                min = self._parse_expression(fields.resolve(value['min'], config)),
+                max = self._parse_expression(fields.resolve(value['max'], config))
             )
         else:
-            return Expression(self._parse_expression(value))
+            return Expression(self._parse_expression(fields.resolve(value, config)))
 
 class SemVerSelector(MaxSelector):
     
@@ -126,10 +124,10 @@ class SemVerSelector(MaxSelector):
         free_versions = set(versions)
         
         latest_ver = max(versions)
-        print("max ver", latest_ver)
+        self.logger.debug("detected latest version: %s", latest_ver)
         
         for name, where, preserve, max_items in self._groups:
-            print("Where: ", name)
+            self.logger.debug("Searching for %s", name)
             where_filters = self._get_where_filters(where, latest_ver)
             
             matched = set()
@@ -151,12 +149,11 @@ class SemVerSelector(MaxSelector):
                 grouped = self._group_versions_by_keys(matched.values(), i-1)
                 
                 for group_key, items in grouped:
-                    print("Grouped by ", group_key)
                     items = list(items)
                     for i in items:
                         del matched[str(i)]
                     for i in items[:k_preserve]:
-                        print("Selected", i)
+                        self.logger.debug("Selected %s", i)
                         selected.extend(grouped_versions[str(i)])
         
         return [str(i) for i in selected]
