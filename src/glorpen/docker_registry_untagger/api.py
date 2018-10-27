@@ -56,12 +56,10 @@ class DockerRegistry(object):
     def remove_image(self, repository, reference):
         r = self._api("%s/manifests/%s" % (repository, reference), 'delete')
         r.raise_for_status()
-        print("remove", r.text, r.status_code)
     
     def get_reference(self, repository, tag):
         r = self._api("%s/manifests/%s" % (repository, tag))
         r.raise_for_status()
-        #print(r.json())
         return r.headers.get("Docker-Content-Digest")
     
     def upload_fake_image(self, repository, tag):
