@@ -152,3 +152,10 @@ class Untagger(object):
             
             for repo in r.get_repositories():
                 self.clean_repository(r, repo, pretend)
+    
+    def list_repos(self):
+        ret = {}
+        for r in self.factory.registries:
+            for repo in r.get_repositories():
+                ret["%s/%s" % (r.name, repo)] = r.get_tags(repo)
+        return ret

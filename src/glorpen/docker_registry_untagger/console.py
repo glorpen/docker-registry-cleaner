@@ -3,22 +3,72 @@
 '''
 
 import logging
-from glorpen.docker_registry_untagger import app
 import argparse
 import pathlib
+from glorpen.docker_registry_untagger.app import AppCompositor
+from inspect import signature
+
+class Cli(object):
+    
+    log_levels = [
+        logging.WARNING,
+        logging.INFO,
+        logging.DEBUG
+    ]
+    
+    def __init__(self):
+        super(Cli, self).__init__()
+        
+        self.parser = argparse.ArgumentParser()
+        self._setup()
+    
+    def _setup(self):
+        self.parser.add_argument("-v", "--verbose", action="count", default=0)
+        self.parser.add_argument("config", action="store", type=pathlib.Path)
+        
+        sp = self.parser.add_subparsers()
+        p = sp.add_parser('list-repos')
+        p.set_defaults(f=self.list_repos)
+        
+        p = sp.add_parser('clean')
+        p.set_defaults(f=self.clean)
+        p.add_argument("-p","--pretend", action="store_true")
+    
+    def set_verbosity(self, local_level):
+        level = min(local_level, len(self.log_levels))
+        logging.basicConfig(level=self.log_levels[level])
+    
+    def run(self, args=None):
+        ns = self.parser.parse_args(args)
+        
+        self.set_verbosity(ns.verbose)
+        
+        compositor = AppCompositor(ns.config)
+        compositor.register_module("glorpen.docker_registry_untagger.selectors.simple")
+        compositor.register_module("glorpen.docker_registry_untagger.selectors.semver")
+        app = compositor.commit()
+        
+        args = {}
+        for k in signature(ns.f).parameters.keys():
+            if k == "app":
+                v = app
+            else:
+                v = getattr(ns, k)
+            
+            args[k] = v
+        
+        ns.f(**args)
+        
+    def clean(self, app, pretend):
+        app.clean(pretend=pretend)
+    
+    def list_repos(self, app):
+        for repo, images in app.list_repos().items():
+            for tag in images:
+                print("%s:%s" % (repo, tag))
+            else:
+                print("Empty repo %s" % repo)
+
 
 if __name__ == "__main__":
-    
-    p = argparse.ArgumentParser()
-    p.add_argument("--pretend", action="store_true")
-    p.add_argument("config", action="store", type=pathlib.Path)
-    
-    ns = p.parse_args()
-    
-    logging.basicConfig(level=logging.DEBUG)
-    
-    a = app.AppCompositor(ns.config)
-    a.register_module("glorpen.docker_registry_untagger.selectors.simple")
-    a.register_module("glorpen.docker_registry_untagger.selectors.semver")
-    untagger = a.commit()
-    untagger.clean(pretend=ns.pretend)
+    Cli().run()
