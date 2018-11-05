@@ -12,7 +12,7 @@ Safe tag deletion
 
 Docker Registry has no native support for deleting single tag from an image.
 
-Fortunatelly it is possible to workaround this problem so Docker Registry Cleaner will **safelly** remove tag from image, without removing image itself.
+Fortunatelly it is possible to workaround this problem so Docker Registry Cleaner will **safely** remove tag from image, without removing image itself.
 The process is quite simple:
 
 - find tags to remove
