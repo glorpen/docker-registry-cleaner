@@ -140,7 +140,6 @@ class Untagger(object):
         
         return False
     
-    # TODO: removing empty repository when GC in docker-registry
     def clean(self, pretend=False):
         for r in self.registries:
             if not r.check():
