@@ -51,10 +51,14 @@ class Loader(object):
                     })
                 ),
                 "repositories": fields.Dict(
-                    values=fields.Dict(
-                        keys=fields.String(),
-                        values=RepoConfigField(self._selector_schemas)
-                    )
+                    keys=fields.String(),
+                    values=fields.Dict({
+                        "paths": fields.List(fields.String()),
+                        "cleaners": fields.Dict(
+                            keys=fields.String(),
+                            values=RepoConfigField(self._selector_schemas)
+                        ) 
+                    })
                 ),
                 **self._selector_configs_schemas
         })

@@ -77,8 +77,8 @@ class AppCompositor(object):
     def _create_cleaners(self, loader, selector_factory: SelectorFactory):
         cleaners = []
         for name, conf in loader.data["repositories"].items():
-            types = OrderedDict((k, selector_factory.get(*v)) for k,v in conf.items())
-            cleaners.append(api.DockerRepository(name, types))
+            types = OrderedDict((k, selector_factory.get(*v)) for k,v in conf["cleaners"].items())
+            cleaners.append(api.DockerRepository(name, conf["paths"], types))
         return tuple(cleaners)
     
     def commit(self):
@@ -122,8 +122,8 @@ class Untagger(object):
         
         if cleaner:
             tags = registry.get_tags(repo)
+            self.logger.info("Using cleaner %r for repo %r", cleaner.name, repo_name)
             if tags:
-                self.logger.info("Cleaner for %s found", repo_name)
                 tags_for_deletion = cleaner.select_tags(tags)
                 
                 if tags_for_deletion:

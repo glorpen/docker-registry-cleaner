@@ -138,14 +138,18 @@ class DockerRegistry(object):
         return self._re_simple_name.match(self._url).group(1)
 
 class DockerRepository(object):
-    def __init__(self, pattern, selectors):
+    def __init__(self, name, patterns, selectors):
         super(DockerRepository, self).__init__()
         
-        self.pattern = pattern
+        self.name = name
+        self.patterns = patterns
         self.selectors = selectors
     
     def supports_repo(self, name):
-        return fnmatch.fnmatch(name, self.pattern)
+        for pattern in self.patterns:
+            if fnmatch.fnmatch(name, pattern):
+                return True
+        return False
     
     def select_tags(self, tags):
         unmatched = list(sorted(tags, reverse=True))
