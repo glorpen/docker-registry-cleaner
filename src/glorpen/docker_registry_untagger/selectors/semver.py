@@ -119,44 +119,46 @@ class SemVerSelector(MaxSelector):
         
         selected = []
         
-        grouped_versions = OrderedDict((k,tuple(v)) for k,v in self._group_versions_by_keys(real_versions, len(self._ver_keys)-1))
-        versions = [semver.VersionInfo.parse(v) for v in grouped_versions.keys()]
-        free_versions = set(versions)
-        
-        latest_ver = max(versions)
-        self.logger.debug("detected latest version: %s", latest_ver)
-        
-        for name, where, preserve, max_items in self._groups:
-            self.logger.debug("Searching for %s", name)
-            where_filters = self._get_where_filters(where, latest_ver)
+        if real_versions:
+            grouped_versions = OrderedDict((k,tuple(v)) for k,v in self._group_versions_by_keys(real_versions, len(self._ver_keys)-1))
+            versions = [semver.VersionInfo.parse(v) for v in grouped_versions.keys()]
+            free_versions = set(versions)
             
-            matched = set()
-            for v in free_versions:
-                if self._are_where_filters_matched(where_filters, v):
-                    matched.add(v)
+            latest_ver = max(versions)
+            self.logger.debug("detected latest version: %s", latest_ver)
             
-            free_versions.difference_update(matched)
-            
-            matched = OrderedDict((str(i),i) for i in sorted(matched, reverse=True))
-            
-            for i, k in enumerate(self._ver_keys):
+            for name, where, preserve, max_items in self._groups:
+                self.logger.debug("Searching for %s", name)
+                where_filters = self._get_where_filters(where, latest_ver)
                 
-                k_preserve = preserve[k]
-                if k_preserve is None:
-                    continue
+                matched = set()
+                for v in free_versions:
+                    if self._are_where_filters_matched(where_filters, v):
+                        matched.add(v)
+                        self.logger.debug("Matched %s", v)
                 
-                # versions with different build metadata should be counted as one
-                grouped = self._group_versions_by_keys(matched.values(), i-1)
+                free_versions.difference_update(matched)
                 
-                for group_key, items in grouped:
-                    items = list(items)
-                    for i in items:
-                        del matched[str(i)]
-                    for i in items[:k_preserve]:
-                        self.logger.debug("Selected %s", i)
-                        selected.extend(grouped_versions[str(i)])
-        
-        return [str(i) for i in selected]
+                matched = OrderedDict((str(i),i) for i in sorted(matched, reverse=True))
+                
+                for i, k in enumerate(self._ver_keys):
+                    
+                    k_preserve = preserve[k]
+                    if k_preserve is None:
+                        continue
+                    
+                    # versions with different build metadata should be counted as one
+                    grouped = self._group_versions_by_keys(list(matched.values()), i-1)
+                    
+                    for _group_key, items in grouped:
+                        items = list(items)
+                        for i in items:
+                            del matched[str(i)]
+                        for i in items[:k_preserve]:
+                            self.logger.debug("Selected %s", i)
+                            selected.extend(grouped_versions[str(i)])
+            
+        return [str(i) for i in set(selected)]
     
     def select(self, tags):
         unmatched = []
