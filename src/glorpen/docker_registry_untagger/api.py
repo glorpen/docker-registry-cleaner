@@ -54,6 +54,9 @@ class DockerRegistry(object):
         return tuple(self._api("%s/tags/list" % repository).json().get("tags") or [])
     
     def remove_image(self, repository, reference):
+        
+        self.logger.info("Removing image referenced by %s:%s", repository, reference)
+        
         r = self._api("%s/manifests/%s" % (repository, reference), 'delete')
         r.raise_for_status()
     
@@ -69,6 +72,19 @@ class DockerRegistry(object):
         data = str(random.random()).encode()
         digest = "sha256:%s" % hashlib.sha256(data).hexdigest()
         
+        # get location for upload and start upload session
+        r = self._api("%s/blobs/uploads/" % repository, method="post")
+        url = r.headers['Location']
+        
+        # upload data and end upload process
+        r = self._api(
+            "%s&digest=%s" % (url, digest),
+            method="put",
+            data=data,
+            content_type="application/octet-stream"
+        )
+        r.raise_for_status()
+        
         d = {
             'schemaVersion': 2,
             'mediaType': 'application/vnd.docker.distribution.manifest.v2+json',
@@ -81,17 +97,7 @@ class DockerRegistry(object):
             ]
         }
         
-        r = self._api("%s/blobs/uploads/" % repository, method="post")
-        url = r.headers['Location']
-        
-        r = self._api(
-            "%s&digest=%s" % (url, digest),
-            method="put",
-            data=data,
-            content_type="application/octet-stream"
-        )
-        r.raise_for_status()
-        
+        # create manifest with given tag
         r = self._api(
             "%s/manifests/%s" % (repository, tag),
             method="put",

@@ -66,7 +66,7 @@ class Cli(object):
         for repo, images in app.list_repos().items():
             for tag in images:
                 print("%s:%s" % (repo, tag))
-            else:
+            if not images:
                 print("Empty repo %s" % repo)
 
 

@@ -10,8 +10,17 @@ from glorpen.docker_registry_untagger import api
 from collections import OrderedDict
 import logging
 
-def create_selector_config(cls, loader, config_key):
-    return cls(loader.data.get(config_key))
+class SelectorFactory(object):
+    def __init__(self):
+        super(SelectorFactory, self).__init__()
+        self._selectors = {}
+    
+    def add_selector(self, cls, symbol, config=None):
+        self._selectors[symbol] = (cls, config)
+    
+    def get(self, symbol, kwargs):
+        s_cls, config = self._selectors[symbol]
+        return s_cls(kwargs, config)
 
 class AppCompositor(object):
     
@@ -22,24 +31,34 @@ class AppCompositor(object):
         svc = self._c.add_service(Loader)
         svc.kwargs(path=config_path)
         
-        svc = self._c.add_service(Factory)
+        svc = self._c.add_service(SelectorFactory)
+        
+        svc = self._c.add_service("app.registries")
+        svc.implementation(self._create_registries)
         svc.kwargs(loader__svc=Loader)
         
+        svc = self._c.add_service("app.cleaners")
+        svc.implementation(self._create_cleaners)
+        svc.kwargs(loader__svc=Loader, selector_factory__svc=SelectorFactory)
+        
         svc = self._c.add_service(Untagger)
-        svc.kwargs(factory__svc=Factory)
+        svc.kwargs(registries__svc="app.registries", cleaners__svc="app.cleaners")
     
     def add_selector(self, cls, symbol, config_cls=None):
-        svc = self._c.get_definition(Factory)
-        svc.call("add_selector", selector_cls=cls, symbol=symbol, config__svc=config_cls)
+        svc = self._c.get_definition(SelectorFactory)
+        svc.call("add_selector", cls=cls, symbol=symbol, config__svc=config_cls)
         
         config_schema = cls.get_config_fields()
         
         svc = self._c.get_definition(Loader)
         svc.call('add_selector_schema', type_name=symbol, schema=config_schema)
     
+    def create_selector_config(self, cls, loader: Loader, config_key):
+        return cls(loader.data.get(config_key))
+    
     def add_selector_config(self, cls, config_key=None):
         svc = self._c.add_service(cls)
-        svc.factory(callable=create_selector_config, loader__svc=Loader, config_key=config_key, cls=cls)
+        svc.factory(callable=self.create_selector_config, loader__svc=Loader, config_key=config_key, cls=cls)
         
         if config_key:
             svc = self._c.get_definition(Loader)
@@ -49,62 +68,39 @@ class AppCompositor(object):
     def register_module(self, path):
         getattr(importlib.import_module(path), "register")(self)
     
+    def _create_registries(self, loader: Loader):
+        registries = []
+        for name, conf in loader.data["accounts"].items():
+            registries.append(api.DockerRegistry(name, conf))
+        return tuple(registries)
+    
+    def _create_cleaners(self, loader, selector_factory: SelectorFactory):
+        cleaners = []
+        for name, conf in loader.data["repositories"].items():
+            types = OrderedDict((k, selector_factory.get(*v)) for k,v in conf.items())
+            cleaners.append(api.DockerRepository(name, types))
+        return tuple(cleaners)
+    
     def commit(self):
         svc = self._c.get_definition(Loader)
         svc.call("load")
         
         return self._c.get(Untagger)
 
-class Factory(object):
-    def __init__(self, loader):
-        super(Factory, self).__init__()
-        
-        self._config = loader.data
-        self._registries = None
-        self._repositories = None
-        self._selectors = {}
-    
-    def add_selector(self, selector_cls, symbol, config=None):
-        self._selectors[symbol] = (selector_cls, config)
-    
-    def _load_registries(self):
-        for name, conf in self._config["accounts"].items():
-            yield api.DockerRegistry(name, conf)
-    
-    def _get_type(self, type, kwargs):
-        # instantinated by parser.RepoConfigField
-        s_cls, config = self._selectors[type]
-        return s_cls(kwargs, config)
-    
-    def _load_repositories(self):
-        for name, conf in self._config["repositories"].items():
-            types = OrderedDict((k, self._get_type(*v)) for k,v in conf.items())
-            yield api.DockerRepository(name, types)
-    
-    @property
-    def registries(self):
-        if self._registries is None:
-            self._registries = tuple(self._load_registries())
-        return self._registries
-    
-    @property
-    def repositories(self):
-        if self._repositories is None:
-            self._repositories = tuple(self._load_repositories())
-        return self._repositories
-
 class Untagger(object):
     
     fake_tag = "untagger-for-deletion"
     
-    def __init__(self, factory):
+    def __init__(self, registries, cleaners):
         super(Untagger, self).__init__()
         
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.factory = factory
+        
+        self.registries = registries
+        self.cleaners = cleaners
     
     def get_supported_cleaner(self, repository):
-        for r in self.factory.repositories:
+        for r in self.cleaners:
             if r.supports_repo(repository):
                 return r
     
@@ -146,7 +142,7 @@ class Untagger(object):
     
     # TODO: removing empty repository when GC in docker-registry
     def clean(self, pretend=False):
-        for r in self.factory.registries:
+        for r in self.registries:
             if not r.check():
                 raise Exception('Could not connect to %s' % r)
             
@@ -155,7 +151,7 @@ class Untagger(object):
     
     def list_repos(self):
         ret = {}
-        for r in self.factory.registries:
+        for r in self.registries:
             for repo in r.get_repositories():
                 ret["%s/%s" % (r.name, repo)] = r.get_tags(repo)
         return ret
