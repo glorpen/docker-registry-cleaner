@@ -6,7 +6,7 @@ Created on 18 wrz 2018
 import re
 from collections import OrderedDict
 from natsort import natsorted
-import glorpen.docker_registry_untagger.selectors.base as base
+import glorpen.docker_registry_cleaner.selectors.base as base
 import glorpen.config.fields as fields
 
 class MaxSelector(base.BaseSelector):

@@ -44,8 +44,8 @@ class Cli(object):
         self.set_verbosity(ns.verbose)
         
         compositor = AppCompositor(ns.config)
-        compositor.register_module("glorpen.docker_registry_untagger.selectors.simple")
-        compositor.register_module("glorpen.docker_registry_untagger.selectors.semver")
+        compositor.register_module("glorpen.docker_registry_cleaner.selectors.simple")
+        compositor.register_module("glorpen.docker_registry_cleaner.selectors.semver")
         app = compositor.commit()
         
         args = {}
