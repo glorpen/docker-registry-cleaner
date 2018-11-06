@@ -29,8 +29,8 @@ The process is quite simple:
 - re-tag found tags to new image
 - remove image with REST API call
 
-Empty repositories
-------------------
+Remove empty repositories
+-------------------------
 
 There is no way to remove repository using REST API, even one without tags.
 
