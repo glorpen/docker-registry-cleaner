@@ -2,6 +2,8 @@
 Docker Registry Cleaner
 =======================
 
+Smart Docker Registry cleaner.
+
 State of Docker Registry
 ========================
 

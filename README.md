@@ -1,24 +1,18 @@
-=======================
-Docker Registry Cleaner
-=======================
+# Docker Registry Cleaner
 
 Smart Docker Registry cleaner.
 
-Official repositories
-=====================
+## Official repositories
 
 GitHub: https://github.com/glorpen/docker-registry-cleaner
 
 BitBucket: https://bitbucket.org/glorpen/docker-registry-cleaner
 
-
-State of Docker Registry
-========================
+## State of Docker Registry
 
 Workarounds for version 2.6.2 of Docker Registry.
 
-Safe tag deletion
------------------
+### Safe tag deletion
 
 Docker Registry has no native support for deleting single tag from an image.
 
@@ -30,8 +24,7 @@ The process is quite simple:
 - re-tag found tags to new image
 - remove image with REST API call
 
-Empty repositories
-------------------
+### Empty repositories
 
 There is no way to remove repository using REST API, even one without tags.
 
@@ -39,17 +32,14 @@ Removing empty repository should be handled on registry side, by your docker-reg
 
 See https://hub.docker.com/r/glorpen/registry/ .
 
-Examples
-========
+## Examples
 
-Regex matching
---------------
+### Regex matching
 
 Removes build tags created by CI:
 
 
-.. sourcecode:: yaml
-
+```yaml
    patterns:
      latest:
        - "latest"
@@ -63,23 +53,21 @@ Removes build tags created by CI:
          type: pattern
          pattern: ci
          max_items: 10
+```
 
-Remove unknown tags
--------------------
+### Remove unknown tags
 
 Removes tags that are not known for groups before it.
 
-.. sourcecode:: yaml
-
+```yaml
    repositories:
      "docker.glorpen.eu/test":
        # ... other groups ...
        other:
          type: max
          max_items: 0
+```
 
-
-Semver tags
------------
+### Semver tags
 
 http://semver.org/
