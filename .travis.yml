@@ -1,0 +1,23 @@
+language: python
+
+python:
+ - "3.4"
+ - "3.5"
+ - "3.6"
+
+install:
+  - pip install .
+
+script:
+  - python setup.py test
+
+deploy:
+  provider: pypi
+  user: glorpen
+  password:
+    secure: "mi50LiqLYx1BuEnfgpPk+lJchgztizFvPQSY/SEmj9EPHsokiV0ckyXHjMyGM9WuT3aMSX3RRzn81gEJisUzg+cZC4miXsSHczi8snMREdQzTSdsFiK/urHUvJpCSWsNyNs5Sq1fBaPiNI4mu756m+IWLjItuYsKmpmFX3V6nyfu/ydOw8kl+wADII0B4YsfW2hmuoUhdaM5UrFF7CMaDyDIyI6epGT+qjd6ex/ZuecPjHRX9JCH+gvB+2BpHII3oBc2wTk6bh6ZCT/zls0Z1+/dmqqvjoPKpJ/ippPrUZhAi0uMeT/U1/XEgX8jbD9cHViphf2stku3lz4LfkFEf8vzzoM+Vaf0wnlxfUeM1zz0jaWQzhYV3uQK7NWjgap08vhtoUuNDCNcFtiJRjxWpX8kW6EhBmyAtV7Std2Vw0NgFdR+tDRFbqfIEhOKzotHoxGgcitd/B6Q8AnSb6ceqCS61owQhmifdo+A2mvoC//4fNsV4TEo/IxNRGJt+ETAjakDsoSJB0dppdYdSruCQOu1FriHREzaJpDwVGphNXPqQPPEIf2qQ9/smSucK6yuY/Ph3/JgX8dbBH5fekXmpEwSG1Sgh86imZKZ7ZZ/2GvWDAfxxcDdTX2ear4fJIureO8zKvvCsdFzID6GFZJNKsYzsOXNguSMpDzX/XCXO5A="
+  on:
+    tags: true
+    branch: master
+    python: '3.6'
+  distributions: "sdist bdist_wheel"
