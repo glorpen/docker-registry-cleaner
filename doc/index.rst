@@ -1,0 +1,61 @@
+=======================
+Docker Registry Cleaner
+=======================
+
+.. image:: https://travis-ci.org/glorpen/docker-registry-cleaner.svg?branch=master
+    :target: https://travis-ci.org/glorpen/docker-registry-cleaner
+    :alt: Build
+
+Smart Docker Registry cleaner.
+
+Official repositories
+=====================
+
+GitHub: https://github.com/glorpen/docker-registry-cleaner
+
+BitBucket: https://bitbucket.org/glorpen/docker-registry-cleaner
+
+State of Docker Registry
+========================
+
+Workarounds for version 2.6.2 of Docker Registry.
+
+Safe tag deletion
+-----------------
+
+Docker Registry has no native support for deleting single tag from an image.
+
+Fortunatelly it is possible to workaround this problem so Docker Registry Cleaner will **safely** remove tag from image, without removing image itself.
+The process is quite simple:
+
+- find tags to remove
+- upload fake image
+- re-tag found tags to new image
+- remove image with REST API call
+
+Empty repositories
+------------------
+
+There is no way to remove repository using REST API, even one without tags.
+
+Removing empty repository should be handled on registry side, by your docker-registry image, eg. on GC run.
+
+See https://hub.docker.com/r/glorpen/registry/ .
+
+
+Contents
+========
+
+.. toctree::
+   :maxdepth: 2
+   
+   code.rst
+   usage.rst
+   
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
