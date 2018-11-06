@@ -2,7 +2,7 @@
 .. moduleauthor:: Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>
 '''
 import semver
-from glorpen.docker_registry_untagger.selectors.simple import MaxSelector
+from glorpen.docker_registry_cleaner.selectors.simple import MaxSelector
 from py_expression_eval import Parser as ExpressionParser
 import glorpen.config.fields as fields
 import glorpen.config.exceptions as config_exceptions

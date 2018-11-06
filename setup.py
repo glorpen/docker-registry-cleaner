@@ -15,12 +15,16 @@ with open("%s/src/glorpen/docker_registry_cleaner/__init__.py" % (here,), "rt") 
     description = re.search(r'^__description__\s*=\s*"([^"]+)', data, re.MULTILINE).group(1)
 
 requires = [
-    'requests>=2.0.0',
+    'requests>=2.0.0,<3.0.0',
+    'glorpen-config>=2.0.0,<3.0.0',
+    'glorpen-di>=1.5.0,<2.0.0',
+    'natsort',
+    'semver',
+    'py-expression-eval',
+    'pyyaml',
 ]
 
-suggested_require = [
-    "pyyaml"
-]
+suggested_require = []
 dev_require = []
 tests_require = ['unittest']
 

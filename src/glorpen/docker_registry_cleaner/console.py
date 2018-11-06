@@ -5,7 +5,7 @@
 import logging
 import argparse
 import pathlib
-from glorpen.docker_registry_untagger.app import AppCompositor
+from glorpen.docker_registry_cleaner.app import AppCompositor
 from inspect import signature
 
 class Cli(object):

@@ -3,10 +3,10 @@ Created on 27 paź 2018
 
 @author: glorpen
 '''
-from glorpen.docker_registry_untagger.parser import Loader
+from glorpen.docker_registry_cleaner.parser import Loader
 import glorpen.di as di
 import importlib
-from glorpen.docker_registry_untagger import api
+from glorpen.docker_registry_cleaner import api
 from collections import OrderedDict
 import logging
 
