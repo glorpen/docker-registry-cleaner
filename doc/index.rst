@@ -49,8 +49,9 @@ Contents
 .. toctree::
    :maxdepth: 2
    
-   code.rst
    usage.rst
+   code/app.rst
+   code/selectors.rst
    
 
 Indices and tables

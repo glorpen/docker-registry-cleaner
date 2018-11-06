@@ -1,10 +1,10 @@
-:mod:`glorpen.di` API Documentation
-***********************************
+Application Documentation
+*************************
 
 :mod:`glorpen.docker_registry_cleaner`
 --------------------------------------
 
-.. automodule:: glorpen.di
+.. automodule:: glorpen.docker_registry_cleaner
    
    .. attribute:: __version__
    
