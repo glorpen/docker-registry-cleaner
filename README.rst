@@ -2,6 +2,13 @@
 Docker Registry Cleaner
 =======================
 
+.. image:: https://travis-ci.com/glorpen/docker-registry-cleaner.svg?branch=master
+    :target: https://travis-ci.com/glorpen/docker-registry-cleaner
+    :alt: Build Status
+.. image:: https://readthedocs.org/projects/docker-registry-cleaner/badge/?version=latest
+    :target: https://docker-registry-cleaner.readthedocs.io/en/latest/
+    :alt: Doc Status
+
 Smart Docker Registry cleaner.
 
 State of Docker Registry

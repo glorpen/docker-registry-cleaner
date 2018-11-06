@@ -1,5 +1,8 @@
 # Docker Registry Cleaner
 
+[![Build Status](https://travis-ci.com/glorpen/docker-registry-cleaner.svg?branch=master)](https://travis-ci.com/glorpen/docker-registry-cleaner)
+[![Doc Status](https://readthedocs.org/projects/docker-registry-cleaner/badge/?version=latest)](https://docker-registry-cleaner.readthedocs.io/en/latest/)
+
 Smart Docker Registry cleaner.
 
 ## Official repositories
