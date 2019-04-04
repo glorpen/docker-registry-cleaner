@@ -6,9 +6,10 @@ Created on 27 paź 2018
 from glorpen.docker_registry_cleaner.parser import Loader
 import glorpen.di as di
 import importlib
-from glorpen.docker_registry_cleaner import api
+from glorpen.docker_registry_cleaner import api, native
 from collections import OrderedDict
 import logging
+import subprocess
 
 class SelectorFactory(object):
     def __init__(self):
@@ -24,7 +25,9 @@ class SelectorFactory(object):
 
 class AppCompositor(object):
     
-    def __init__(self, config_path, registry_url, registry_path):
+    registry_address = "127.0.0.1:5000"
+    
+    def __init__(self, config_path, registry_path):
         super(AppCompositor, self).__init__()
         self._c = di.Container()
     
@@ -34,7 +37,7 @@ class AppCompositor(object):
         svc = self._c.add_service(SelectorFactory)
         
         svc = self._c.add_service(api.DockerRegistry)
-        svc.kwargs(url=registry_url, conf={"user": None, "password": None})
+        svc.kwargs(url="http://%s" % self.registry_address, conf={"auth": None})
         
         svc = self._c.add_service("app.cleaners")
         svc.implementation(self._create_cleaners)
@@ -42,6 +45,14 @@ class AppCompositor(object):
         
         svc = self._c.add_service(Untagger)
         svc.kwargs(registry__svc=api.DockerRegistry, cleaners__svc="app.cleaners")
+        
+        svc = self._c.add_service(native.RegistryStorage)
+        svc.kwargs(registry_path=registry_path)
+        
+        svc = self._c.add_service(native.NativeRegistry)
+        svc.kwargs(registry_path=registry_path, registry_address=self.registry_address)
+        
+        svc = self._c.add_service(Cleaner)
     
     def add_selector(self, cls, symbol, config_cls=None):
         svc = self._c.get_definition(SelectorFactory)
@@ -78,7 +89,7 @@ class AppCompositor(object):
         svc = self._c.get_definition(Loader)
         svc.call("load")
         
-        return self._c.get(Untagger)
+        return self._c.get(Cleaner)
 
 class Untagger(object):
     
@@ -110,26 +121,25 @@ class Untagger(object):
         registry.remove_image(repo, fake_ref)
     
     def clean_repository(self, registry, repo, pretend=False):
-        repo_name = "%s/%s" % (registry.name, repo)
-        cleaner = self.get_supported_cleaner(repo_name)
+        cleaner = self.get_supported_cleaner(repo)
         
         if cleaner:
             tags = registry.get_tags(repo)
-            self.logger.info("Using cleaner %r for repo %r", cleaner.name, repo_name)
+            self.logger.info("Using cleaner %r for repo %r", cleaner.name, repo)
             if tags:
                 tags_for_deletion = cleaner.select_tags(tags)
                 
                 if tags_for_deletion:
                     if pretend:
                         for i in tags_for_deletion:
-                            self.logger.info("Would delete %s:%s", repo_name, i)
+                            self.logger.info("Would delete %s:%s", repo, i)
                     else:
                         self.delete_tags(registry, repo, tags_for_deletion)
                     return True
             else:
-                self.logger.info("Found empty repo %s", repo_name)
+                self.logger.info("Found empty repo %s", repo)
         else:
-            self.logger.info("Cleaner for %s not found", repo_name)
+            self.logger.info("Cleaner for %s not found", repo)
         
         return False
     
@@ -145,3 +155,31 @@ class Untagger(object):
         for repo in self.registry.get_repositories():
             ret[repo] = self.registry.get_tags(repo)
         return ret
+    
+    def close(self):
+        self.registry.close()
+
+class Cleaner(object):
+    def __init__(self, untagger: Untagger, registry_storage: native.RegistryStorage, native_registry: native.NativeRegistry):
+        super(Cleaner, self).__init__()
+        
+        self._untagger = untagger
+        self._storage = registry_storage
+        self._native = native_registry
+    
+    def clean(self, pretend=False):
+        with self._native.run():
+            self._untagger.clean(pretend)
+            
+        if not pretend:
+            self._native.garbage_collect()
+            self._storage.remove_repositories_without_tags()
+            self._native.garbage_collect()
+    
+    def close(self):
+        self._native.cleanup()
+        self._untagger.close()
+    
+    def list_repos(self):
+        with self._native.run():
+            return self._untagger.list_repos()

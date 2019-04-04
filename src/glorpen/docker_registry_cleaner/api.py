@@ -62,11 +62,11 @@ class DockerRegistry(object):
         r.raise_for_status()
         return r.headers.get("Docker-Content-Digest")
     
-    def upload_fake_image(self, repository, tag):
+    def upload_fake_image(self, repository, tag, data=None):
         
         self.logger.info("Uploaded fake image to %s:%s", repository, tag)
         
-        data = str(random.random()).encode()
+        data = str(random.random()).encode() if data is None else data
         digest = "sha256:%s" % hashlib.sha256(data).hexdigest()
         
         # get location for upload and start upload session
@@ -129,6 +129,9 @@ class DockerRegistry(object):
             json = manifest
         )
         r.raise_for_status()
+    
+    def close(self):
+        self._req.close()
     
 class DockerRepository(object):
     def __init__(self, name, patterns, selectors):
