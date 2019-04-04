@@ -2,7 +2,6 @@
 .. moduleauthor:: Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>
 '''
 import requests
-import re
 import fnmatch
 import hashlib
 import random
@@ -10,8 +9,6 @@ import logging
 
 class DockerRegistry(object):
     _version = "v2"
-    
-    _re_simple_name = re.compile(r'[a-z]+://([a-z0-9.-]+)(?:[0-9]+)?')
     
     def __init__(self, url, conf):
         super(DockerRegistry, self).__init__()
@@ -133,10 +130,6 @@ class DockerRegistry(object):
         )
         r.raise_for_status()
     
-    @property
-    def name(self):
-        return self._re_simple_name.match(self._url).group(1)
-
 class DockerRepository(object):
     def __init__(self, name, patterns, selectors):
         super(DockerRepository, self).__init__()

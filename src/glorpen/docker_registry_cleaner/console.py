@@ -24,6 +24,8 @@ class Cli(object):
     
     def _setup(self):
         self.parser.add_argument("-v", "--verbose", action="count", default=0)
+        self.parser.add_argument("-r", "--registry", action="store", default="127.0.0.1:5000")
+        self.parser.add_argument("-p", "--path", action="store", default="/var/lib/registry")
         self.parser.add_argument("config", action="store", type=pathlib.Path)
         
         sp = self.parser.add_subparsers()
@@ -43,7 +45,7 @@ class Cli(object):
         
         self.set_verbosity(ns.verbose)
         
-        compositor = AppCompositor(ns.config)
+        compositor = AppCompositor(ns.config, ns.registry, ns.path)
         compositor.register_module("glorpen.docker_registry_cleaner.selectors.simple")
         compositor.register_module("glorpen.docker_registry_cleaner.selectors.semver")
         app = compositor.commit()

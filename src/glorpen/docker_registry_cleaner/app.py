@@ -24,7 +24,7 @@ class SelectorFactory(object):
 
 class AppCompositor(object):
     
-    def __init__(self, config_path):
+    def __init__(self, config_path, registry_url, registry_path):
         super(AppCompositor, self).__init__()
         self._c = di.Container()
     
@@ -33,16 +33,15 @@ class AppCompositor(object):
         
         svc = self._c.add_service(SelectorFactory)
         
-        svc = self._c.add_service("app.registries")
-        svc.implementation(self._create_registries)
-        svc.kwargs(loader__svc=Loader)
+        svc = self._c.add_service(api.DockerRegistry)
+        svc.kwargs(url=registry_url, conf={"user": None, "password": None})
         
         svc = self._c.add_service("app.cleaners")
         svc.implementation(self._create_cleaners)
         svc.kwargs(loader__svc=Loader, selector_factory__svc=SelectorFactory)
         
         svc = self._c.add_service(Untagger)
-        svc.kwargs(registries__svc="app.registries", cleaners__svc="app.cleaners")
+        svc.kwargs(registry__svc=api.DockerRegistry, cleaners__svc="app.cleaners")
     
     def add_selector(self, cls, symbol, config_cls=None):
         svc = self._c.get_definition(SelectorFactory)
@@ -68,12 +67,6 @@ class AppCompositor(object):
     def register_module(self, path):
         getattr(importlib.import_module(path), "register")(self)
     
-    def _create_registries(self, loader: Loader):
-        registries = []
-        for name, conf in loader.data["accounts"].items():
-            registries.append(api.DockerRegistry(name, conf))
-        return tuple(registries)
-    
     def _create_cleaners(self, loader, selector_factory: SelectorFactory):
         cleaners = []
         for name, conf in loader.data["repositories"].items():
@@ -91,12 +84,12 @@ class Untagger(object):
     
     fake_tag = "untagger-for-deletion"
     
-    def __init__(self, registries, cleaners):
+    def __init__(self, registry, cleaners):
         super(Untagger, self).__init__()
         
         self.logger = logging.getLogger(self.__class__.__name__)
         
-        self.registries = registries
+        self.registry = registry
         self.cleaners = cleaners
     
     def get_supported_cleaner(self, repository):
@@ -141,16 +134,14 @@ class Untagger(object):
         return False
     
     def clean(self, pretend=False):
-        for r in self.registries:
-            if not r.check():
-                raise Exception('Could not connect to %s' % r)
-            
-            for repo in r.get_repositories():
-                self.clean_repository(r, repo, pretend)
+        if not self.registry.check():
+            raise Exception('Could not connect to %s' % self.registry)
+        
+        for repo in self.registry.get_repositories():
+            self.clean_repository(self.registry, repo, pretend)
     
     def list_repos(self):
         ret = {}
-        for r in self.registries:
-            for repo in r.get_repositories():
-                ret["%s/%s" % (r.name, repo)] = r.get_tags(repo)
+        for repo in self.registry.get_repositories():
+            ret[repo] = self.registry.get_tags(repo)
         return ret

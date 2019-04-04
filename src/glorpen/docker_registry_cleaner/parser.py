@@ -6,7 +6,6 @@ Created on 18 wrz 2018
 import glorpen.config as config
 import glorpen.config.fields as fields
 import glorpen.config.loaders as loaders
-from pprint import pprint
 
 class RepoConfigField(fields.Field):
     
@@ -42,14 +41,6 @@ class Loader(object):
     
     def _get_schema(self):
         return fields.Dict({
-                "accounts": fields.Dict(
-                    values=fields.Dict({
-                        "auth": fields.Dict({
-                            "user": fields.String(allow_blank=True),
-                            "password": fields.String(allow_blank=True)
-                        })
-                    })
-                ),
                 "repositories": fields.Dict(
                     keys=fields.String(),
                     values=fields.Dict({
