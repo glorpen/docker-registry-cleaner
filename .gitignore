@@ -1,3 +1,6 @@
 __pycache__
 *.egg-info
 /doc/_build
+/.eggs
+/ci/tmp/*
+!/ci/tmp/.keep

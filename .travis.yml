@@ -9,8 +9,12 @@ python:
 
 install:
 
+env:
+  - REGISTRY_TAG=2.7.1
+
 script:
-  - bash ci/test.sh
+  - ci/test.sh ${REGISTRY_TAG}
+  - ci/test_in_container.sh ${REGISTRY_TAG}
 
 deploy:
   provider: pypi

@@ -8,7 +8,7 @@ ADD src/ /root/app/src/
 ADD README.rst CHANGES.rst setup.py /root/app/
 RUN pip install --no-cache-dir --root /root/image --no-warn-script-location /root/app
 
-FROM registry:2 as reg
+FROM registry:{REGISTRY_TAG} as reg
 
 FROM base
 
