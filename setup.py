@@ -15,13 +15,13 @@ with open("%s/src/glorpen/docker_registry_cleaner/__init__.py" % (here,), "rt") 
     description = re.search(r'^__description__\s*=\s*"([^"]+)', data, re.MULTILINE).group(1)
 
 requires = [
-    'requests>=2.0.0,<3.0.0',
-    'glorpen-config>=2.0.0,<3.0.0',
-    'glorpen-di>=1.5.0,<2.0.0',
-    'natsort',
-    'semver',
-    'py-expression-eval',
-    'pyyaml',
+    'requests~=2.21',
+    'glorpen-config~=2.1',
+    'glorpen-di~=1.5',
+    'natsort~=6.0',
+    'semver~=2.8',
+    'py-expression-eval~=0.3',
+    'pyyaml~=5.1',
 ]
 
 suggested_require = []
@@ -44,6 +44,7 @@ setup(
         'suggested': suggested_require
     },
     install_requires=requires,
+    python_requires='>=3.4,<4.0',
     namespace_packages=["glorpen"],
     package_dir={'':'src'},
     zip_safe=True,
