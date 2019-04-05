@@ -1,14 +1,16 @@
 language: python
 
+services:
+  - docker
+
 python:
  - "3.5"
  - "3.6"
 
 install:
-  - pip install .
 
 script:
-  - python setup.py test
+  - bash ci/test.sh
 
 deploy:
   provider: pypi
