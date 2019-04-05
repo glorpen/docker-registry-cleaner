@@ -44,7 +44,7 @@ setup(
         'suggested': suggested_require
     },
     install_requires=requires,
-    python_requires='>=3.4,<4.0',
+    python_requires='>=3.5,<4.0',
     namespace_packages=["glorpen"],
     package_dir={'':'src'},
     zip_safe=True,
