@@ -1,6 +1,6 @@
 #!/bin/bash
 
-project_dir="$(dirname "$(dirname "$(realpath "${0}")")")"
+project_dir="$(dirname "$(dirname "$(readlink -f "${0}")")")"
 
 TAG="${1-latest}"
 REGISTRY_TAG="${2-2}"

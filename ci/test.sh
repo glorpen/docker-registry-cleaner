@@ -1,6 +1,6 @@
 #!/bin/bash
 
-project_dir="$(dirname "$(dirname "$(realpath "${0}")")")"
+project_dir="$(dirname "$(dirname "$(readlink -f "${0}")")")"
 
 export REGISTRY_BIN="${project_dir}/ci/tmp/registry"
 export REGISTRY_DATA="${project_dir}/ci/tmp/registry-data"

@@ -7,7 +7,7 @@ python:
  - "3.5"
  - "3.6"
 
-install:
+install: []
 
 env:
   - REGISTRY_TAG=2.7.1
