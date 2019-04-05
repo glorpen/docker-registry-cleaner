@@ -1,8 +1,10 @@
 #!/bin/bash
 
+set -e
+
 project_dir="$(dirname "$(dirname "$(readlink -f "${0}")")")"
 
-set -ex
+set -x
 
 bash "${project_dir}/ci/build.sh" "latest" "${1-2}"
 

@@ -1,11 +1,13 @@
 #!/bin/bash
 
+set -e
+
 project_dir="$(dirname "$(dirname "$(readlink -f "${0}")")")"
 
 export REGISTRY_BIN="${project_dir}/ci/tmp/registry"
 export REGISTRY_DATA="${project_dir}/ci/tmp/registry-data"
 
-set -ex
+set -x
 
 reg_id=$(docker run -d registry:${1-2} sleep 1m)
 docker cp $reg_id:/bin/registry "${REGISTRY_BIN}"
