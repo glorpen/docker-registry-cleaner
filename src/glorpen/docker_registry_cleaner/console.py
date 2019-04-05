@@ -24,7 +24,8 @@ class Cli(object):
     
     def _setup(self):
         self.parser.add_argument("-v", "--verbose", action="count", default=0)
-        self.parser.add_argument("-p", "--registry-path", action="store", default="/var/lib/registry")
+        self.parser.add_argument("-d", "--registry-data", action="store", default="/var/lib/registry")
+        self.parser.add_argument("-b", "--registry-nin", action="store", default="registry")
         self.parser.add_argument("config", action="store", type=pathlib.Path)
         
         sp = self.parser.add_subparsers()
@@ -39,8 +40,8 @@ class Cli(object):
         level = min(local_level, len(self.log_levels))
         logging.basicConfig(level=self.log_levels[level])
     
-    def create_app(self, config_path, registry_path):
-        compositor = AppCompositor(config_path, registry_path)
+    def create_app(self, config_path, registry_data, registry_bin):
+        compositor = AppCompositor(config_path, registry_data, registry_bin)
         compositor.register_module("glorpen.docker_registry_cleaner.selectors.simple")
         compositor.register_module("glorpen.docker_registry_cleaner.selectors.semver")
         return compositor.commit()
@@ -48,7 +49,7 @@ class Cli(object):
     def run(self, args=None):
         ns = self.parser.parse_args(args)
         self.set_verbosity(ns.verbose)
-        app = self.create_app(ns.config, ns.registry_path)
+        app = self.create_app(ns.config, ns.registry_data, ns.registry_path)
         
         args = {}
         for k in signature(ns.f).parameters.keys():

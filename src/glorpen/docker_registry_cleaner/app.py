@@ -27,7 +27,7 @@ class AppCompositor(object):
     
     registry_address = "127.0.0.1:5000"
     
-    def __init__(self, config_path, registry_path):
+    def __init__(self, config_path, registry_data, registry_bin):
         super(AppCompositor, self).__init__()
         self._c = di.Container()
     
@@ -47,10 +47,10 @@ class AppCompositor(object):
         svc.kwargs(registry__svc=api.DockerRegistry, cleaners__svc="app.cleaners")
         
         svc = self._c.add_service(native.RegistryStorage)
-        svc.kwargs(registry_path=registry_path)
+        svc.kwargs(registry_path=registry_data)
         
         svc = self._c.add_service(native.NativeRegistry)
-        svc.kwargs(registry_path=registry_path, registry_address=self.registry_address)
+        svc.kwargs(registry_data=registry_data, registry_address=self.registry_address, registry_bin=registry_bin)
         
         svc = self._c.add_service(Cleaner)
     

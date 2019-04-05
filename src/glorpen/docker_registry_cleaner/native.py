@@ -11,18 +11,18 @@ import yaml
 import pkg_resources
 import contextlib
 import threading
-import sys
 
 class NativeRegistry(object):
     
     config_path = "/tmp/registry-config.yaml"
     registry_proc = None
     
-    def __init__(self, registry_path, registry_address):
+    def __init__(self, registry_data, registry_bin, registry_address):
         super(NativeRegistry, self).__init__()
         
-        self.registry_path = registry_path
+        self.registry_data = registry_data
         self.registry_address = registry_address
+        self.registry_bin = registry_bin
         
         self.logger = logging.getLogger(self.__class__.__name__)
         self.registry_logger = logging.getLogger("%s:registry" % self.__class__.__name__)
@@ -32,7 +32,7 @@ class NativeRegistry(object):
             with pkg_resources.resource_stream(__package__, 'resources/registry.yaml') as f:
                 d = yaml.safe_load(f)
                 
-                d["storage"]["filesystem"]["rootdirectory"] = self.registry_path
+                d["storage"]["filesystem"]["rootdirectory"] = self.registry_data
                 d["http"]["addr"] = self.registry_address
                 
                 with open(self.config_path, "wt") as f:
@@ -46,7 +46,7 @@ class NativeRegistry(object):
     
     def garbage_collect(self):
         self.logger.info("Running garbage collector")
-        p = subprocess.Popen(["registry", "garbage-collect", self._save_config(), "--delete-untagged=true"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        p = subprocess.Popen([self.registry_bin, "garbage-collect", self._save_config(), "--delete-untagged=true"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         retval = self._track_process(p, wait=True)
         
         if retval != 0:
@@ -73,7 +73,7 @@ class NativeRegistry(object):
             return p.wait()
     
     def start(self):
-        self._registry_proc = subprocess.Popen(["registry", "serve", self._save_config()], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        self._registry_proc = subprocess.Popen([self.registry_bin, "serve", self._save_config()], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         msg = "listening on %s" % self.registry_address
         
         c = threading.Condition()
