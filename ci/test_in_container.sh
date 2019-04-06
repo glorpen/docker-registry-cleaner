@@ -4,14 +4,18 @@ set -e
 
 project_dir="$(dirname "$(dirname "$(readlink -f "${0}")")")"
 
-set -x
+if [ "x${1}" == "x" ];
+then
+	echo "You have to specify image name as first argument"
+	exit 1
+fi
 
-bash "${project_dir}/ci/build.sh" "latest" "${1-2}"
+set -x
 
 exec docker run --rm \
 -u $UID:$UID -w /srv \
--e PYTHONPATH="/srv/src" -e HOME="/srv" \
+-e HOME="/srv" \
 -v "${project_dir}:/srv" \
 --tmpfs /var/lib/registry \
-glorpen/docker-registry-cleaner:latest \
+${1} \
 python /srv/setup.py test

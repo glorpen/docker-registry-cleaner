@@ -18,8 +18,9 @@ env:
     - DOCKER_BUILD: ${DOCKER_REPOSITORY}:b${TRAVIS_BUILD_NUMBER}
 
 script:
-  - ci/test.sh ${REGISTRY_TAG}
-  - ci/test_in_container.sh ${REGISTRY_TAG}
+  - ci/test.sh "${REGISTRY_TAG}"
+  - ci/generate_dockerfile.sh "${REGISTRY_TAG}" | docker build -f - -t "${DOCKER_BUILD}" ./
+  - ci/test_in_container.sh "${DOCKER_BUILD}"
 
 deploy:
   - provider: pypi
