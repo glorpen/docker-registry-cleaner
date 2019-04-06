@@ -11,6 +11,16 @@ Docker Registry Cleaner
 
 Smart Docker Registry cleaner.
 
+---------------------
+Official repositories
+---------------------
+
+GitHub: https://github.com/glorpen/docker-registry-cleaner
+
+BitBucket: https://bitbucket.org/glorpen/docker-registry-cleaner
+
+Docker Hub: https://hub.docker.com/r/glorpen/registry-cleaner
+
 --------
 Features
 --------
@@ -35,16 +45,6 @@ Bundled registry versions
 ==========  ==========
 1.0.0       2.7.1
 ==========  ==========
-
----------------------
-Official repositories
----------------------
-
-GitHub: https://github.com/glorpen/docker-registry-cleaner
-
-BitBucket: https://bitbucket.org/glorpen/docker-registry-cleaner
-
-Docker Hub: https://hub.docker.com/r/glorpen/registry-cleaner
 
 ------------------------
 State of Docker Registry
