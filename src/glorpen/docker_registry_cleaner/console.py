@@ -49,7 +49,7 @@ class Cli(object):
     def run(self, args=None):
         ns = self.parser.parse_args(args)
         self.set_verbosity(ns.verbose)
-        app = self.create_app(ns.config, ns.registry_data, ns.registry_path)
+        app = self.create_app(ns.config, ns.registry_data, ns.registry_bin)
         
         args = {}
         for k in signature(ns.f).parameters.keys():

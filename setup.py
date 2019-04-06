@@ -35,7 +35,13 @@ setup(
     author_email='arkadiusz.dziegiel@glorpen.pl',
     url="https://github.com/glorpen/docker-registry-cleaner",
     keywords='docker registry v2 cleaner untagger',
-    packages=["glorpen.docker_registry_cleaner"],
+    packages=[
+        "glorpen.docker_registry_cleaner",
+        "glorpen.docker_registry_cleaner.selectors",
+    ],
+    package_data={
+        "glorpen.docker_registry_cleaner": ['resources/*']
+    },
     extras_require={
         'testing': tests_require + suggested_require,
         'development': dev_require + tests_require + suggested_require,
