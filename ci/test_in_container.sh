@@ -13,7 +13,7 @@ fi
 set -x
 
 exec docker run --rm \
--u $UID:$UID -w /srv \
+-u $UID:$UID -w /srv --entrypoint '' \
 -e HOME="/srv" \
 -v "${project_dir}:/srv" \
 --tmpfs /var/lib/registry \
