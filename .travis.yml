@@ -10,19 +10,42 @@ python:
 install: []
 
 env:
-  - REGISTRY_TAG=2.7.1
+  global:
+    - REGISTRY_TAG=2.7.1
+    - DOCKER_USERNAME: glorpen
+    - secure: "mwL980mUrTLWcBeWQY+fbL6FthqLYXIU+kCR1GCtkj0g4xo/t/iqtUb5MIfnP5YeHO8tmzthVVUguZRaZ+0KIr4MdqqlboY+64Gjev56hLT0C/ObarMnqMbU+k4SoNhbaZc7/C3/dFHKyPnnH+vAPQaP3FAv9vdK/UdpqnN+DUJWew5Z6MlwONlpNRR1vIVflPOf+BfvmSnZU8zbnfFV/oQMa2v0tof4XujbYz2C+I4OL4hsr+STn1BryQ9YTQ/rK9M6HuisS8LJFVhwxDVTmD67/Cb550YvSYQaCjtU1KiXUls0RzTCVENuz0UJ4LtJjZUv6EpKzMjeLFewnJMJhz7XIZ6h5BI/OYQSbjS2Gp8MM4nfzj15CVBpPMiryjGO66YS1mziiWoI3e3nWjOoaLYJWUU+EXlOnYMo1t89ADwfryZLMmMPW0Ny7AQANIGa9LZ6lg5WGbIQcgzZVpciIQIQRQWUIYsNRYaS9uay8b8c7BGKtgCS4sCqXvu12aUOEUwXgAFyO3RVDlxpVpazSacaPU6JlnUu7nV8/lAjgV+Hu0J6eCjcyCsI9VmmHCmV4e/CnaCUnV+z9MUoml42qZCToyCBUvGKIe9J2aTespcUKaOpX146pd8LihvvbIxYRXGPPOE9yt7CV7QntT7fFV+GQq9asIbkgJhSfSz6vgw="
+    - DOCKER_REPOSITORY: glorpen/registry-cleaner
+    - DOCKER_BUILD: ${DOCKER_REPOSITORY}:b${TRAVIS_BUILD_NUMBER}
 
 script:
   - ci/test.sh ${REGISTRY_TAG}
   - ci/test_in_container.sh ${REGISTRY_TAG}
 
 deploy:
-  provider: pypi
-  user: glorpen
-  password:
-    secure: "mi50LiqLYx1BuEnfgpPk+lJchgztizFvPQSY/SEmj9EPHsokiV0ckyXHjMyGM9WuT3aMSX3RRzn81gEJisUzg+cZC4miXsSHczi8snMREdQzTSdsFiK/urHUvJpCSWsNyNs5Sq1fBaPiNI4mu756m+IWLjItuYsKmpmFX3V6nyfu/ydOw8kl+wADII0B4YsfW2hmuoUhdaM5UrFF7CMaDyDIyI6epGT+qjd6ex/ZuecPjHRX9JCH+gvB+2BpHII3oBc2wTk6bh6ZCT/zls0Z1+/dmqqvjoPKpJ/ippPrUZhAi0uMeT/U1/XEgX8jbD9cHViphf2stku3lz4LfkFEf8vzzoM+Vaf0wnlxfUeM1zz0jaWQzhYV3uQK7NWjgap08vhtoUuNDCNcFtiJRjxWpX8kW6EhBmyAtV7Std2Vw0NgFdR+tDRFbqfIEhOKzotHoxGgcitd/B6Q8AnSb6ceqCS61owQhmifdo+A2mvoC//4fNsV4TEo/IxNRGJt+ETAjakDsoSJB0dppdYdSruCQOu1FriHREzaJpDwVGphNXPqQPPEIf2qQ9/smSucK6yuY/Ph3/JgX8dbBH5fekXmpEwSG1Sgh86imZKZ7ZZ/2GvWDAfxxcDdTX2ear4fJIureO8zKvvCsdFzID6GFZJNKsYzsOXNguSMpDzX/XCXO5A="
-  on:
-    tags: true
-    branch: master
-    python: '3.6'
-  distributions: "sdist bdist_wheel"
+  - provider: pypi
+    user: glorpen
+    password:
+      secure: "mi50LiqLYx1BuEnfgpPk+lJchgztizFvPQSY/SEmj9EPHsokiV0ckyXHjMyGM9WuT3aMSX3RRzn81gEJisUzg+cZC4miXsSHczi8snMREdQzTSdsFiK/urHUvJpCSWsNyNs5Sq1fBaPiNI4mu756m+IWLjItuYsKmpmFX3V6nyfu/ydOw8kl+wADII0B4YsfW2hmuoUhdaM5UrFF7CMaDyDIyI6epGT+qjd6ex/ZuecPjHRX9JCH+gvB+2BpHII3oBc2wTk6bh6ZCT/zls0Z1+/dmqqvjoPKpJ/ippPrUZhAi0uMeT/U1/XEgX8jbD9cHViphf2stku3lz4LfkFEf8vzzoM+Vaf0wnlxfUeM1zz0jaWQzhYV3uQK7NWjgap08vhtoUuNDCNcFtiJRjxWpX8kW6EhBmyAtV7Std2Vw0NgFdR+tDRFbqfIEhOKzotHoxGgcitd/B6Q8AnSb6ceqCS61owQhmifdo+A2mvoC//4fNsV4TEo/IxNRGJt+ETAjakDsoSJB0dppdYdSruCQOu1FriHREzaJpDwVGphNXPqQPPEIf2qQ9/smSucK6yuY/Ph3/JgX8dbBH5fekXmpEwSG1Sgh86imZKZ7ZZ/2GvWDAfxxcDdTX2ear4fJIureO8zKvvCsdFzID6GFZJNKsYzsOXNguSMpDzX/XCXO5A="
+    on:
+      tags: true
+      branch: master
+      python: '3.6'
+    distributions: "sdist bdist_wheel"
+
+  - provider: script
+    on:
+      branch: master
+    script: docker run --rm -v ${TRAVIS_BUILD_DIR}:/srv -e "PASSWORD=$DOCKER_PASSWORD" glorpen/hub-metadata:1.0.0 -l /srv/README.rst -u "${DOCKER_USERNAME}" -r "${DOCKER_REPOSITORY}"
+  
+  - provider: script
+    on:
+      tags: true
+      branch: master
+      condition: "$TRAVIS_TAG =~ ^v[0-9.]+$"
+    script: 'set -e;
+             echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
+             set -x;
+             for i in latest ${TRAVIS_TAG/v/}; do
+                docker tag "${DOCKER_BUILD}" ${DOCKER_REPOSITORY}:$i;
+                docker push ${DOCKER_REPOSITORY}:$i;
+             done;'

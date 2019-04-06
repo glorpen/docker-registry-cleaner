@@ -5,12 +5,10 @@ LABEL maintainer="Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>"
 FROM base as data
 
 ADD src/ /root/app/src/
-ADD README.rst CHANGES.rst setup.py /root/app/
+ADD README.rst setup.py /root/app/
 RUN pip install --no-cache-dir --root /root/image --no-warn-script-location /root/app
-
-FROM registry:{REGISTRY_TAG} as reg
 
 FROM base
 
-COPY --from=reg /bin/registry /bin/
+COPY --from=registry:{REGISTRY_TAG} /bin/registry /bin/
 COPY --from=data /root/image /

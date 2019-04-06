@@ -6,8 +6,6 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 with open(os.path.join(here, 'README.rst')) as f:
     README = f.read()
-with open(os.path.join(here, 'CHANGES.rst')) as f:
-    CHANGES = f.read()
 
 with open("%s/src/glorpen/docker_registry_cleaner/__init__.py" % (here,), "rt") as f:
     data = f.read()
@@ -32,7 +30,7 @@ setup(
     name='docker-registry-cleaner',
     version = version,
     description=description,
-    long_description=README + '\n\n' + CHANGES,
+    long_description=README,
     author='Arkadiusz Dzięgiel',
     author_email='arkadiusz.dziegiel@glorpen.pl',
     url="https://github.com/glorpen/docker-registry-cleaner",
