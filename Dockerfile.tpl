@@ -18,3 +18,5 @@ FROM base
 
 COPY --from=registry:{REGISTRY_TAG} /bin/registry /bin/
 COPY --from=data /root/image /
+
+ENTRYPOINT ["python", "-m", "glorpen.docker_registry_cleaner.console"]
