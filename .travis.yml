@@ -36,6 +36,7 @@ deploy:
   - provider: script
     on:
       branch: master
+      python: '3.6'
     script: docker run --rm -v ${TRAVIS_BUILD_DIR}:/srv -e "PASSWORD=$DOCKER_PASSWORD" glorpen/hub-metadata:1.0.0 -l /srv/README.rst -u "${DOCKER_USERNAME}" -r "${DOCKER_REPOSITORY}"
   
   - provider: script
@@ -43,6 +44,7 @@ deploy:
       tags: true
       branch: master
       condition: "$TRAVIS_TAG =~ ^v[0-9.]+$"
+      python: '3.6'
     script: 'set -e;
              echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
              set -x;
