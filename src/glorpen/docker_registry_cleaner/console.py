@@ -25,7 +25,7 @@ class Cli(object):
     def _setup(self):
         self.parser.add_argument("-v", "--verbose", action="count", default=0)
         self.parser.add_argument("-d", "--registry-data", action="store", default="/var/lib/registry")
-        self.parser.add_argument("-b", "--registry-nin", action="store", default="registry")
+        self.parser.add_argument("-b", "--registry-bin", action="store", default="registry")
         self.parser.add_argument("config", action="store", type=pathlib.Path)
         
         sp = self.parser.add_subparsers()
