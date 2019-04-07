@@ -50,3 +50,11 @@ class TestApi(unittest.TestCase):
                     r.upload_fake_image('second-cross-cleaning', '2', b'3333333332')
             app.clean()
             self.assertDictContainsSubset({"first-cross-cleaning": ("2",), "second-cross-cleaning": ("2",)}, app.list_repos(), "Newer images are not removed")
+    
+    def test_nested_repos(self):
+        with fixtures._app(self._get_repositories_config(0)) as app:
+            with app._native.run():
+                with fixtures._registry() as r:
+                    r.upload_fake_image('some-nested/name', 'latest', b'11111111111')
+            app.clean()
+            self.assertNotIn("some-nested", app.list_repos(), "No image after cleaning")

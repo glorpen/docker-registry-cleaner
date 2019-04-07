@@ -11,6 +11,8 @@ import yaml
 import pkg_resources
 import contextlib
 import threading
+import glob
+import pathlib
 
 class NativeRegistry(object):
     
@@ -115,7 +117,9 @@ class RegistryStorage(object):
         self._logger = logging.getLogger(self.__class__.__name__)
     
     def remove_repositories_without_tags(self):
-        for r in os.listdir(self._get_repositories_path()):
+        repos_path = self._get_repositories_path()
+        for p in glob.glob('%s/**/_manifests/tags' % repos_path, recursive=True):
+            r = str(pathlib.Path(p).relative_to(repos_path).parent.parent)
             if not self.has_tags(r):
                 self._logger.info("Removing data for repository %s", r)
                 self.remove_repository(r)
