@@ -134,6 +134,8 @@ class DockerRegistry(object):
         self._req.close()
     
 class DockerRepository(object):
+    """Stores cleaner configuration for repository."""
+    
     def __init__(self, name, patterns, selectors):
         super(DockerRepository, self).__init__()
         
@@ -142,12 +144,14 @@ class DockerRepository(object):
         self.selectors = selectors
     
     def supports_repo(self, name):
+        """Checks if name is matched by any of the patterns. Uses fnmatch."""
         for pattern in self.patterns:
             if fnmatch.fnmatch(name, pattern):
                 return True
         return False
     
     def select_tags(self, tags):
+        """Returns tags that should be deleted."""
         unmatched = list(sorted(tags, reverse=True))
         
         for_deletion = set()

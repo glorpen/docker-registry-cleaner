@@ -15,6 +15,7 @@ import glob
 import pathlib
 
 class NativeRegistry(object):
+    """Allows executing registry commands using real registry binary."""
     
     config_path = "/tmp/registry-config.yaml"
     registry_proc = None
@@ -43,10 +44,15 @@ class NativeRegistry(object):
         return self.config_path
     
     def cleanup(self):
+        """Cleans runtime configs and temp files."""
         if os.path.exists(self.config_path):
             os.unlink(self.config_path)
     
     def garbage_collect(self):
+        """
+        Starts registry binary in garbage-collect mode and waits for completion.
+        Will throw an Exception when failed.
+        """
         self.logger.info("Running garbage collector")
         p = subprocess.Popen([self.registry_bin, "garbage-collect", self._save_config(), "--delete-untagged=true"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         retval = self._track_process(p, wait=True)
@@ -75,6 +81,7 @@ class NativeRegistry(object):
             return p.wait()
     
     def start(self):
+        """Starts registry daemon and blocks until it is initialized."""
         self._registry_proc = subprocess.Popen([self.registry_bin, "serve", self._save_config()], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         msg = "listening on %s" % self.registry_address
         
@@ -94,11 +101,13 @@ class NativeRegistry(object):
         c.wait()
         
     def stop(self):
+        """Stop running processes."""
         self._registry_proc.terminate()
         self._registry_proc.wait()
     
     @contextlib.contextmanager
     def run(self):
+        """Starts and stops registry process."""
         self.start()
         try:
             yield
@@ -107,6 +116,7 @@ class NativeRegistry(object):
             self.cleanup()
 
 class RegistryStorage(object):
+    """Manages raw registry files."""
     
     def __init__(self, registry_path, api_version="v2"):
         super(RegistryStorage, self).__init__()
@@ -138,4 +148,5 @@ class RegistryStorage(object):
         return len(tags) > 0
     
     def remove_repository(self, name):
+        """Deletes all files for given repository."""
         shutil.rmtree(self._get_repository_path(name))

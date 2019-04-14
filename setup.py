@@ -23,8 +23,12 @@ requires = [
 ]
 
 suggested_require = []
-dev_require = []
-tests_require = ['unittest']
+dev_require = [
+    'sphinx',
+    'sphinxcontrib-versioning',
+    'sphinx_rtd_theme'
+]
+tests_require = []
 
 setup(
     name='docker-registry-cleaner',
