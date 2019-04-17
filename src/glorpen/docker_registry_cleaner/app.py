@@ -1,15 +1,13 @@
-'''
-Created on 27 paź 2018
+"""
+.. moduleauthor:: Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>
+"""
 
-@author: glorpen
-'''
 from glorpen.docker_registry_cleaner.parser import Loader
 import glorpen.di as di
 import importlib
 from glorpen.docker_registry_cleaner import api, native
 from collections import OrderedDict
 import logging
-import subprocess
 
 class SelectorFactory(object):
     def __init__(self):
@@ -24,10 +22,22 @@ class SelectorFactory(object):
         return s_cls(kwargs, config)
 
 class AppCompositor(object):
+    """Wires application components.
+    
+    Uses :class:`glorpen.di.Container` to define services and args.
+    """
     
     registry_address = "127.0.0.1:5000"
     
     def __init__(self, config_path, registry_data, registry_bin):
+        """
+        :param config_path: Path to config file.
+        :type config_path: str
+        :param registry_data: Path to registry data dir.
+        :type registry_data: str
+        :param registry_bin: Path to registry binary.
+        :type registry_bin: str
+        """
         super(AppCompositor, self).__init__()
         self._c = di.Container()
     
@@ -37,7 +47,7 @@ class AppCompositor(object):
         svc = self._c.add_service(SelectorFactory)
         
         svc = self._c.add_service(api.DockerRegistry)
-        svc.kwargs(url="http://%s" % self.registry_address, conf={"auth": None})
+        svc.kwargs(url="http://%s" % self.registry_address)
         
         svc = self._c.add_service("app.cleaners")
         svc.implementation(self._create_cleaners)
@@ -55,6 +65,16 @@ class AppCompositor(object):
         svc = self._c.add_service(Cleaner)
     
     def add_selector(self, cls, symbol, config_cls=None):
+        """Adds new selector type for use in configuration.
+        
+        :param cls: Selector class.
+        :type cls: callable
+        :param symbol: Selector symbol used in config.
+        :type symbol: str
+        :param config_cls: Optional selector configuration class.
+        :type config_cls: str
+        
+        """
         svc = self._c.get_definition(SelectorFactory)
         svc.call("add_selector", cls=cls, symbol=symbol, config__svc=config_cls)
         

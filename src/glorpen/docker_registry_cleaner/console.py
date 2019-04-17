@@ -9,6 +9,8 @@ from glorpen.docker_registry_cleaner.app import AppCompositor
 from inspect import signature
 
 class Cli(object):
+    """Commandline application.
+    """
     
     log_levels = [
         logging.WARNING,
@@ -37,16 +39,20 @@ class Cli(object):
         p.add_argument("-p","--pretend", action="store_true")
     
     def set_verbosity(self, local_level):
+        """Sets log levels, available are: 0:WARNING, 1:INFO, 2:DEBUG"""
+        
         level = min(local_level, len(self.log_levels))
         logging.basicConfig(level=self.log_levels[level])
     
     def create_app(self, config_path, registry_data, registry_bin):
+        """Creates application main object."""
         compositor = AppCompositor(config_path, registry_data, registry_bin)
         compositor.register_module("glorpen.docker_registry_cleaner.selectors.simple")
         compositor.register_module("glorpen.docker_registry_cleaner.selectors.semver")
         return compositor.commit()
     
     def run(self, args=None):
+        """Runs application with provided args."""
         ns = self.parser.parse_args(args)
         self.set_verbosity(ns.verbose)
         app = self.create_app(ns.config, ns.registry_data, ns.registry_bin)
@@ -63,9 +69,11 @@ class Cli(object):
         ns.f(**args)
         
     def clean(self, app, pretend):
+        """Run cleanup tasks."""
         app.clean(pretend=pretend)
     
     def list_repos(self, app):
+        """Prints repositories."""
         for repo, images in app.list_repos().items():
             for tag in images:
                 print("%s:%s" % (repo, tag))

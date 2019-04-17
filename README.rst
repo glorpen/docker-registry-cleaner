@@ -21,6 +21,8 @@ BitBucket: https://bitbucket.org/glorpen/docker-registry-cleaner
 
 Docker Hub: https://hub.docker.com/r/glorpen/registry-cleaner
 
+.. marker:features
+
 --------
 Features
 --------
@@ -73,6 +75,8 @@ Remove empty repositories
 There is no way to remove repository using REST API, even one without tags - empty repo is still listed by registry.
 
 Currently files should be cleaned on GC run on registry side (or some third party app, like this one).
+
+.. marker:example
 
 ---------------------
 Example configuration
@@ -165,6 +169,8 @@ Above config will:
 
 For more info see https://docker-registry-cleaner.readthedocs.io/en/latest/code/selectors.html#glorpen-docker-registry-cleaner-selectors-semver
 
+.. marker:usage
+
 -----
 Usage
 -----
@@ -186,4 +192,4 @@ and then to clean:
 
 .. code:: bash
 
-   docker run --rm -v `pwd`:/srv glorpen/registry-cleaner /srv/config.yml -d /srv/registry-data clean``
+   docker run --rm -v `pwd`:/srv glorpen/registry-cleaner /srv/config.yml -d /srv/registry-data clean

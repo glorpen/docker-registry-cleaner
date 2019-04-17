@@ -1,7 +1,7 @@
 '''
 Created on 4 kwi 2019
 
-@author: glorpen
+.. moduleauthor:: Arkadiusz Dzięgiel <arkadiusz.dziegiel@glorpen.pl>
 '''
 import os
 import shutil
@@ -15,12 +15,25 @@ import glob
 import pathlib
 
 class NativeRegistry(object):
-    """Allows executing registry commands using real registry binary."""
+    """Allows executing registry commands using real registry binary.
     
-    config_path = "/tmp/registry-config.yaml"
-    registry_proc = None
+    Supports garbage-collect command and running local registry binary with delete support enabled.
+    """
+    
+    _config_path = "/tmp/registry-config.yaml"
+    """Path used to create runtime config for docker registry binary."""
+    
+    _registry_proc = None
     
     def __init__(self, registry_data, registry_bin, registry_address):
+        """
+        :param registry_data: Path to registry datadir.
+        :type registry_data: str
+        :param registry_bin: Path to registry binary.
+        :type registry_bin: str
+        :param registry_address: Address that registry should listen on.
+        :type registry_address: str
+        """
         super(NativeRegistry, self).__init__()
         
         self.registry_data = registry_data
@@ -31,27 +44,29 @@ class NativeRegistry(object):
         self.registry_logger = logging.getLogger("%s:registry" % self.__class__.__name__)
     
     def _save_config(self):
-        if not os.path.exists(self.config_path):
+        if not os.path.exists(self._config_path):
             with pkg_resources.resource_stream(__package__, 'resources/registry.yaml') as f:
                 d = yaml.safe_load(f)
                 
                 d["storage"]["filesystem"]["rootdirectory"] = self.registry_data
                 d["http"]["addr"] = self.registry_address
                 
-                with open(self.config_path, "wt") as f:
+                with open(self._config_path, "wt") as f:
                     yaml.dump(d, f)
         
-        return self.config_path
+        return self._config_path
     
     def cleanup(self):
-        """Cleans runtime configs and temp files."""
-        if os.path.exists(self.config_path):
-            os.unlink(self.config_path)
+        """Removes runtime configs and temporary files."""
+        if os.path.exists(self._config_path):
+            os.unlink(self._config_path)
     
     def garbage_collect(self):
-        """
-        Starts registry binary in garbage-collect mode and waits for completion.
+        """Starts registry binary in garbage-collect mode and waits for completion.
+        
         Will throw an Exception when failed.
+        
+        :raises: Exception
         """
         self.logger.info("Running garbage collector")
         p = subprocess.Popen([self.registry_bin, "garbage-collect", self._save_config(), "--delete-untagged=true"], stderr=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -101,7 +116,7 @@ class NativeRegistry(object):
         c.wait()
         
     def stop(self):
-        """Stop running processes."""
+        """Stop running processes, does not clean temporary data."""
         self._registry_proc.terminate()
         self._registry_proc.wait()
     
@@ -119,6 +134,10 @@ class RegistryStorage(object):
     """Manages raw registry files."""
     
     def __init__(self, registry_path, api_version="v2"):
+        """
+        :param registry_path: Path to registry datadir.
+        :type registry_path: str
+        """
         super(RegistryStorage, self).__init__()
         
         self._api_version = api_version
@@ -127,6 +146,7 @@ class RegistryStorage(object):
         self._logger = logging.getLogger(self.__class__.__name__)
     
     def remove_repositories_without_tags(self):
+        """Checks repositories in registry data dir and removes ones without tags.""" 
         repos_path = self._get_repositories_path()
         for p in glob.glob('%s/**/_manifests/tags' % repos_path, recursive=True):
             r = str(pathlib.Path(p).relative_to(repos_path).parent.parent)
@@ -144,9 +164,24 @@ class RegistryStorage(object):
         return self._get_repository_path(repository) + "/_manifests/tags"
     
     def has_tags(self, repository):
+        """Checks if tags directory for given repository is not empty.
+        
+        :param repository: Repository name.
+        :type repository: str
+        """
         tags = os.listdir(self._get_tags_path(repository))
         return len(tags) > 0
     
     def remove_repository(self, name):
-        """Deletes all files for given repository."""
+        """
+        Deletes all files for given repository.
+        
+        .. warning::
+        
+            there is no rollback, your data will be gone
+        
+        :param name: Repository name.
+        :type name: str
+        
+        """
         shutil.rmtree(self._get_repository_path(name))

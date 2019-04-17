@@ -1,5 +1,5 @@
-Application Documentation
-*************************
+Api Documentation
+*****************
 
 :mod:`glorpen.docker_registry_cleaner`
 --------------------------------------
@@ -9,6 +9,10 @@ Application Documentation
    .. attribute:: __version__
    
       Current package version.
+
+   .. attribute:: __description__
+
+      Short package description.
 
 :mod:`glorpen.docker_registry_cleaner.api`
 ------------------------------------------
@@ -27,6 +31,13 @@ Application Documentation
 
 .. automodule:: glorpen.docker_registry_cleaner.console
    :members:
+
+:mod:`glorpen.docker_registry_cleaner.native`
+---------------------------------------------
+
+.. automodule:: glorpen.docker_registry_cleaner.native
+   :members:
+
 
 :mod:`glorpen.docker_registry_cleaner.parser`
 ---------------------------------------------

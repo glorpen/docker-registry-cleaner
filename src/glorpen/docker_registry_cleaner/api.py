@@ -8,26 +8,34 @@ import random
 import logging
 
 class DockerRegistry(object):
+    """Manages single remote repository through Docker Registry API."""
     _version = "v2"
     
-    def __init__(self, url, conf):
+    def __init__(self, url, auth=None):
+        """
+        :param url: Docker Registry URL
+        :type url: str
+        :param auth: Optional user and password in format ``{"user": user, "password": password}``. 
+        :type auth: dict
+        """
         super(DockerRegistry, self).__init__()
         self.logger = logging.getLogger(self.__class__.__name__)
         self._url = url
         self._cache = {}
     
         self._req = requests.Session()
-        self._setup(**conf)
+        
+        self._setup()
+        if auth:
+            self._setup_auth(**auth)
     
     def _setup_auth(self, user, password):
         self._req.auth = (user, password)
     
-    def _setup(self, auth=None):
+    def _setup(self):
         self._req.headers.update({
             'accept': 'application/vnd.docker.distribution.manifest.v2+json'
         })
-        if auth:
-            self._setup_auth(**auth)
     
     def _api(self, path, method="get", data=None, json=None, content_type=None):
         headers = {}
@@ -42,22 +50,26 @@ class DockerRegistry(object):
         return getattr(self._req, method)(url, headers=headers, json=json, data=data)
     
     def check(self):
+        """Checks wheter we can connect to registry."""
         return self._api("").status_code == 200
     
     def get_repositories(self):
+        """List repositories names."""
         return tuple(self._api("_catalog").json().get("repositories", tuple()))
     
     def get_tags(self, repository):
+        """List tag names for given repository."""
         return tuple(self._api("%s/tags/list" % repository).json().get("tags") or [])
     
     def remove_image(self, repository, reference):
-        
+        """Removes image by given reference."""
         self.logger.info("Removing image referenced by %s:%s", repository, reference)
         
         r = self._api("%s/manifests/%s" % (repository, reference), 'delete')
         r.raise_for_status()
     
     def get_reference(self, repository, tag):
+        """Returns digest for given tag."""
         r = self._api("%s/manifests/%s" % (repository, tag))
         r.raise_for_status()
         return r.headers.get("Docker-Content-Digest")

@@ -17,6 +17,9 @@ import sys
 import os
 import shlex
 
+# for readthedocs.org
+sys.path.append("%s/src" % os.path.dirname(os.path.dirname(__file__)))
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -213,5 +216,14 @@ htmlhelp_basename = 'docker-registry-cleanerdoc'
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
     'py2': ('https://docs.python.org/2', None),
-    'py3': ('https://docs.python.org/3', None)
+    'py3': ('https://docs.python.org/3', None),
+    'glorpen.di': ('https://glorpen-di.readthedocs.io/en/latest', None)
+}
+
+autodoc_default_options = {
+    #'members': 'var1, var2',
+    #'member-order': 'bysource',
+    'special-members': '__init__',
+    'undoc-members': True,
+    'exclude-members': '__weakref__'
 }
